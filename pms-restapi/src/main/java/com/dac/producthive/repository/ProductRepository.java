@@ -9,9 +9,6 @@ import org.springframework.data.repository.query.Param;
 import com.dac.producthive.model.Product;
 
 /**
- * Author : rajgs
- * Date   : 31 Dec 2024
- * Time   : 5:26:39 pm
  *  JPA Repository is mainly used for managing the data in a Spring Boot Application. 
  * JpaRepository is particularly a JPA specific extension for Repository.
  * Jpa Repository contains the APIs for basic CRUD operations, the APIS for 
