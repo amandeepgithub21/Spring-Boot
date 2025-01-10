@@ -1,0 +1,789 @@
+Step 1: create  Spring stater project 
+Step 2: select Spring data JPA , Spring web, spring Devtools, MySQL Driver 
+Step 3: go to src/main/resource> application properties then copy and paste below content
+
+
+
+
+# Tomcat Server properties
+server.port=8088
+server.servlet.context-path=/carthivee
+
+
+# MySQL Database properties
+spring.datasource.url=jdbc:mysql://localhost:3307/cartdb2?createDatabaseIfNotExist=true
+spring.datasource.username=root
+spring.datasource.password=cdacacts
+#spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# Hibernate Properties
+# Tables created Automatically
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+spring.jpa.show-sql=true
+
+Step 4: now we will paste the below code in pom.xml file (under the description select all the below data and paste this ) 
+
+
+<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+	<scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
+	<properties>
+		<java.version>17</java.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		
+		
+		<!-- https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api -->
+		<dependency>
+		    <groupId>jakarta.validation</groupId>
+		    <artifactId>jakarta.validation-api</artifactId>    
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+
+
+Step 5: now we have to create packages in base packages src/main/java > 
+com.dac.cart >>>
+com.dac.cart.model
+com.dac.cart.repository
+com.dac.cart.service
+com.dac.cart.controller
+com.dac.cart.exception
+
+
+Step 6: now create respective classes according the packages 
+.model>> Cart.java, Customer.java
+
+.repository>> (create interfaces) CustomerRepo.java,CartRepo.java
+
+.service>> CustomerService.java, CartService.java
+
+.controller >> CartController.java,CustomerController.java
+
+.exception>> ResourceNotFoundException.java,GlobalExceptionHandler.java
+
+
+
+----------------------------------------------------------------------------------------------
+## Cart (model)
+
+
+package com.dac.cart.model;
+
+
+
+import jakarta.persistence.*;
+
+
+@Entity
+public class Cart {
+	
+	
+
+		@Id
+		 @GeneratedValue(strategy = GenerationType.IDENTITY,generator = "cart_seq")
+		 @SequenceGenerator(name="cart_seq",initialValue = 1000,allocationSize = 1)
+	   	 private Long cid;
+		 
+		 @Column(nullable = false)
+	     private String cname;
+		 
+		 
+		 @Column(nullable = false)
+	     private float price;
+		 
+		 @Column(nullable = false)
+	     private Long custid;
+		 
+
+		public Long getCid() {
+			return cid;
+		}
+
+		public void setCid(Long cid) {
+			this.cid = cid;
+		}
+
+		public String getCname() {
+			return cname;
+		}
+
+		public void setCname(String cname) {
+			this.cname = cname;
+		}
+
+		public float getPrice() {
+			return price;
+		}
+
+		public void setPrice(float price) {
+			this.price = price;
+		}
+
+		public Long getcustid() {
+			return custid;
+		}
+
+		public void setcustid(Long custid) {
+			this.custid = custid;
+		}
+
+		
+		public Cart(Long cid, String cname, float price,Long custid) {
+			this.cid = cid;
+			this.cname = cname;
+			this.price = price;
+			this.custid=custid;
+			
+		}
+
+		public Cart() {
+			super();
+			// TODO Auto-generated constructor stub
+		}
+
+}
+
+----------------------------------------------------------------------------------------------
+##Customer (Model)
+
+
+package com.dac.cart.model;
+
+
+import java.nio.charset.StandardCharsets;
+import java.sql.Date;
+import java.util.Base64;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+
+@Entity
+@Table(name="customers")
+public class Customer {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY,generator = "customer_seq")
+	@SequenceGenerator(name="customer_seq",initialValue = 101,allocationSize = 1)
+	@Column(name="did")
+	private Long id;
+
+	@Column(unique=true,nullable = false)    //Unique Constraint
+	private String email;
+
+	@Column(name="first_name",nullable = false) //not null constraint
+	private String fname;
+
+	@Column(name="last_name",nullable = false)
+	private String lname;
+
+	@NotBlank(message = "Password cannot be blank")
+	@Size(min = 8, max = 255, message = "Password must be between 8 and 255 characters")
+	@Column(name = "password", nullable = false)
+	private String password;
+
+	@JsonFormat(pattern="yyyy-MM-dd")
+	@Column(nullable = false)
+	private Date dob;
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getFname() {
+		return fname;
+	}
+
+	public void setFname(String fname) {
+		this.fname = fname;
+	}
+
+	public String getLname() {
+		return lname;
+	}
+
+	public void setLname(String lname) {
+		this.lname = lname;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		Base64.Encoder encoder = Base64.getEncoder();  //Use Base64 class for password Encryption
+        String normalString = password;
+        String encodedString = encoder.encodeToString(   // encrypt password in database field
+        normalString.getBytes(StandardCharsets.UTF_8) );
+        this.password = encodedString;
+	}
+
+	public Date getDob() {
+		return dob;
+	}
+
+	public void setDob(Date dob) {
+		this.dob = dob;
+	}
+
+	public Customer() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	public Customer(Long id, String email, String fname, String lname,
+			@NotBlank(message = "Password cannot be blank") @Size(min = 8, max = 255, message = "Password must be between 8 and 255 characters") String password,
+			Date dob) {
+		this.id = id;
+		this.email = email;
+		this.fname = fname;
+		this.lname = lname;
+		this.password = password;
+		this.dob = dob;
+	}
+
+}
+
+----------------------------------------------------------------------------------------------
+#CartRepo
+
+
+package com.dac.cart.repository;
+
+
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.dac.cart.model.Cart;
+
+
+
+public interface CartRepo  extends JpaRepository<Cart , Long>{
+
+	
+	
+	@Query("SELECT c FROM Cart c WHERE LOWER(REPLACE(c.cname, ' ', '')) LIKE "
+			+ "LOWER(CONCAT(REPLACE(:cname, ' ', ''), '%'))") 
+	List<Cart> findCartByNameContainingIgnoreCase(@Param("cname") String cname);
+	
+}
+
+
+
+----------------------------------------------------------------------------------------------
+
+#CustomerRepo
+
+package com.dac.cart.repository;
+
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.dac.cart.model.Customer;
+
+ 
+public interface CustomerRepo  extends JpaRepository<Customer, Long>{
+
+	
+	
+	public Optional<Customer> findByEmail(String email);
+	
+	public Optional<Customer> findByLname(String lname);
+	
+	
+
+}
+
+
+----------------------------------------------------------------------------------------------
+##CartService
+
+package com.dac.cart.service;
+
+
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.dac.cart.model.Cart;
+import com.dac.cart.repository.CartRepo;
+
+
+@Service
+public class CartService {
+
+private final CartRepo cartrepo;
+
+	
+	
+	
+	public CartService(CartRepo cartrepo) {
+		this.cartrepo = cartrepo;
+	}
+
+
+
+
+	public Cart saveCart(Cart c) {
+		return cartrepo.save(c); // invoked pre defined mehtod  save()of jpA repository 
+	}
+	
+	
+	public List<Cart> listAll(){
+		return cartrepo.findAll();
+		}
+	
+	
+	   public Optional<Cart> getSingleCart(long cid) {
+		   return cartrepo.findById(cid);      
+	   }
+	   
+	   public void deleteCart(long cid) {
+		   cartrepo.deleteById(cid); 
+	   }
+	   
+	   public List<Cart> searchCartByName(String name){
+		   return cartrepo.findCartByNameContainingIgnoreCase(name); //Invokes method with custom query
+	   }
+
+	   
+
+
+	   
+	   
+}
+
+----------------------------------------------------------------------------------------------
+##CustomerService
+
+package com.dac.cart.service;
+
+
+
+
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.dac.cart.model.Customer;
+import com.dac.cart.repository.CustomerRepo;
+
+
+
+
+
+
+
+@Service
+public class CustomerService {
+
+	
+	@Autowired
+	private CustomerRepo crepo;
+
+	
+	public Customer registerCustomer(Customer c) {
+
+
+		return crepo.save(c); 	}
+	
+	public Optional<Customer> loginCustomer(String email) {
+		return crepo.findByEmail(email); 	}
+	
+	
+	
+}
+
+----------------------------------------------------------------------------------------------
+##CartController
+
+
+package com.dac.cart.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.dac.cart.exception.ResourceNotFoundException;
+import com.dac.cart.model.Cart;
+import com.dac.cart.service.CartService;
+
+@RestController
+@RequestMapping("/api")
+public class CartController {
+   
+	
+	
+	
+	@Autowired
+	private CartService cartService;
+	
+	@PostMapping("/carts")
+	public ResponseEntity<Cart> saveCart(@Validated @RequestBody Cart  c) {
+				try {
+			
+		Cart cart1=cartService.saveCart(c);
+		return ResponseEntity.status(HttpStatus.CREATED).body(cart1);
+		
+		} catch(Exception ex)
+		{
+			 ex.printStackTrace();
+			 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+					 
+		}
+	}
+	
+	@GetMapping("/carts")
+	public ResponseEntity<List<Cart>> displayAllCart(){
+		try {
+			List<Cart> carts=cartService.listAll();
+			return ResponseEntity.ok(carts);
+		} catch(Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+	
+	
+	
+	
+	@GetMapping("/cart/{cid}")
+	public ResponseEntity<Cart> getCartById(@PathVariable(value="cid") Long cId) 
+			throws ResourceNotFoundException{
+
+		Cart c=cartService.getSingleCart(cId).orElseThrow(() ->
+		new  ResourceNotFoundException("Cart Not Found for this Id : "+cId)); 
+
+		return ResponseEntity.ok(c);
+	}
+	
+	
+	@PutMapping("/cart/{cid}")
+	public ResponseEntity<Cart> updateCart(@PathVariable(value="cid") Long cId,
+	        @Validated @RequestBody Cart c) throws ResourceNotFoundException {
+
+	    // Fetch the cart from the service layer by id (cid)
+	    Cart cart = cartService.getSingleCart(cId)
+	            .orElseThrow(() -> new ResourceNotFoundException("Cart Not Found for this Id : " + cId));
+
+	    // Update the fields of the fetched cart object with values from the request body
+	    cart.setCname(c.getCname());  // assuming `cname` is the correct property
+	    cart.setPrice(c.getPrice());  // update price
+
+	    // Save the updated cart and return the updated cart object
+	    final Cart updatedCart = cartService.saveCart(cart); // invoke the service layer method to save the updated cart
+	    return ResponseEntity.ok().body(updatedCart);
+	}
+
+	
+	
+			@DeleteMapping("/cart/{cid}")
+			public ResponseEntity<Map<String,Boolean>> deleteCart(@PathVariable(value="cid") Long cId) 
+					throws ResourceNotFoundException {
+
+				cartService.getSingleCart(cId).  
+				orElseThrow(() -> new ResourceNotFoundException("Cart Not Found for this Id :"+cId));
+
+				cartService.deleteCart(cId); 
+
+				Map<String,Boolean> response=new HashMap<>();
+				response.put("Deleted", Boolean.TRUE);
+				
+				return ResponseEntity.ok(response);
+			}
+				
+						
+				@GetMapping("/search")
+			    public ResponseEntity<?> searchCartByName(@RequestParam("cname") String cname) {
+			        try {
+			            List<Cart> carts = cartService.searchCartByName(cname);
+			            
+			            if (carts.isEmpty()) {
+			                return new ResponseEntity<>("No carts found with the given name.", HttpStatus.NOT_FOUND);
+			            }
+			            
+			            return new ResponseEntity<>(carts, HttpStatus.OK);
+			        } catch (Exception ex) {
+			        	
+			            return new ResponseEntity<>("An error occurred while searching for carts.", HttpStatus.INTERNAL_SERVER_ERROR);
+			        }
+			    }
+			
+				
+			}
+----------------------------------------------------------------------------------------------
+## CustomerController
+
+package com.dac.cart.controller;
+
+
+
+
+
+
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.dac.cart.exception.ResourceNotFoundException;
+import com.dac.cart.model.Customer;
+import com.dac.cart.service.CustomerService;
+
+
+
+@RestController
+@RequestMapping("/api")
+public class CustomerController {
+
+	
+	private final CustomerService cservice;
+
+	public CustomerController(CustomerService cservice) {
+	
+		this.cservice = cservice;
+	}
+	
+	
+	
+			@PostMapping("/register")
+			public ResponseEntity<String> createCustomer(@Validated @RequestBody Customer customer){
+				try {
+					
+
+					Customer registeredCustomer=cservice.registerCustomer(customer); //save dealer details
+					if(registeredCustomer !=null) {
+						return ResponseEntity.ok("Registration Successfull");
+					}else {
+						return ResponseEntity.badRequest().body("Registration Failed");
+					}
+				}catch(Exception e) {
+					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).
+							body("An Error Occurred :"+e.getMessage());
+				}
+				
+			}
+			
+			
+			
+		@PostMapping("/login")
+		public ResponseEntity<Boolean> loginDealer(@Validated @RequestBody Customer customer) 
+				throws ResourceNotFoundException
+		{
+			Boolean isLogin=false;
+			String email = customer.getEmail();
+			String password =  customer.getPassword();
+			
+			System.out.println(email);
+			
+			Customer d= cservice.loginCustomer(email).orElseThrow(() -> //Invokes loginDealer() method with email parameter
+			new ResourceNotFoundException("Dealer doen't Exists :: " +email));
+			
+			if(email.equals(d.getEmail()) && password.equals(d.getPassword())) {
+				isLogin=true;
+			}
+			return ResponseEntity.ok(isLogin);
+		}
+			
+	
+		
+}
+
+
+------------------------------------------------------------------------------------------------
+
+
+### GlobalExceptionHandler
+
+
+ package com.dac.producthive.exception;
+
+ import org.springframework.http.HttpStatus;
+ import org.springframework.http.ResponseEntity;
+ import org.springframework.web.bind.annotation.ControllerAdvice;
+ import org.springframework.web.bind.annotation.ExceptionHandler;
+ import org.springframework.web.bind.annotation.ResponseStatus;
+
+ 
+ @ControllerAdvice
+ public class GlobalExceptionHandler {
+ 	
+ 	@ExceptionHandler(ResourceNotFoundException.class)
+     @ResponseStatus(HttpStatus.NOT_FOUND)
+     public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException ex) {
+         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+     }
+
+ }
+
+
+
+------------------------------------------------------------------------------------------------
+
+### ResourceNotFoundException
+
+
+
+package com.dac.producthive.exception;
+
+public class ResourceNotFoundException  extends Exception{
+
+	private static final long serialVersionUID = 1L;
+
+	//Generate constructor from Super claas
+	public ResourceNotFoundException(String message) {
+		super(message);
+		
+	}
+
+}
+
+ ===================================================================================================
+         ========================================================================
+                     ============================================
+                             ======================
+                                THE END    
+POSTMAN  API TESTING
+
+
+              POST =  http://localhost:8088/carthivee/api/register
+
+             {
+  "email": "abc.example@gmail.com",
+  "fname": "abc",
+  "lname": "Doe",
+  "password": "securePassword123",
+           "dob": "1990-01-01"
+          }
+
+
+
+            POST = http://localhost:8088/carthivee/api/login
+
+             {
+          "email": "abc.exapmle@gmail.com",
+          "password": "securePassword123"
+  
+       }
+
+
+
+       POST = http://localhost:8088/carthivee/api/carts
+
+  {
+  "cname": "teset Cart",
+  "price": 155.75,
+  "custid": 12145
+}
+ 
+
+
+           GET= http://localhost:8088/carthivee/api/carts
+
+        
+
+         GET = http://localhost:8088/carthivee/api/cart/1004
+
+
+
+           PUT= http://localhost:8088/carthivee/api/cart/1004
+
+       {
+  "cname": "test dmart Cart",
+  "price": 1755.75,
+  "custid": 12145
+}
+
+
+       DELETE = http://localhost:8088/carthivee/api/cart/1004
+

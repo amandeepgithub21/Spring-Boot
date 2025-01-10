@@ -1,0 +1,17 @@
+Step 1:npm Create vite@latest then enter
+Step 2: enter project Name
+Step 3: select framework then language 
+Step 4: cd Projectname
+Step 5: npm install or we can use npm i
+Step 6: now open project in vs code and install tailwind css in vs code terminal
+step 7:  npm install -D tailwindcss postcss autoprefixer
+Step 8: npx tailwindcss init -p
+Step 10: now copy the code tailwind-config.js file from website and paste in project and then index.css and then app.jsx and paste their 
+Step 11: now run application using command 
+npm run dev 
+
+
+
+----------------------------------------------------------------------------
+if vital error occur run below command
+npm install --save-dev web-vitals

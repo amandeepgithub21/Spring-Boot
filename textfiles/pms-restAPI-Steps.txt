@@ -1,0 +1,1053 @@
+Step 1: create  Spring stater project 
+Step 2: select Spring data JPA , Spring web, spring Devtools, MySQL Driver 
+Step 3: go to src/main/resource> application properties then copy and paste below content
+
+
+
+
+# Tomcat Server properties
+server.port=8086
+server.servlet.context-path=/producthive
+
+
+# MySQL Database properties
+spring.datasource.url=jdbc:mysql://localhost:3307/productdb?createDatabaseIfNotExist=true
+spring.datasource.username=root
+spring.datasource.password=Aman@1990
+#spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+
+# Hibernate Properties
+# Tables created Automatically
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+spring.jpa.show-sql=true
+
+Step 4: now we will paste the below code in pom.xml file (under the description select all the below data and paste this ) 
+
+
+<url/>
+	<licenses>
+		<license/>
+	</licenses>
+	<developers>
+		<developer/>
+	</developers>
+	<scm>
+		<connection/>
+		<developerConnection/>
+		<tag/>
+		<url/>
+	</scm>
+	<properties>
+		<java.version>17</java.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		
+		
+		<!-- https://mvnrepository.com/artifact/jakarta.validation/jakarta.validation-api -->
+		<dependency>
+		    <groupId>jakarta.validation</groupId>
+		    <artifactId>jakarta.validation-api</artifactId>    
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+
+
+
+Step 5: now we have to create packages in base packages src/main/java > com.dac.producthive >>>
+com.dac.producthive.model
+com.dac.producthive.repository
+com.dac.producthive.service
+com.dac.producthive.controller
+com.dac.producthive.exception
+
+
+Step 6: now create respective classes according the packages 
+.model>> Product.java, Dealer.java,Address.java, DealerAndAddressProjection.java
+
+.repository>> (create interfaces) DealerRepository.java,ProductRepository.java
+
+.service>> DealerService.java, ProductService.java
+
+.controller >> ProductController.java,DealerController.java
+
+.exception>> ResourceNotFoundException.java,GlobalExceptionHandler.java
+
+
+
+----------------------------------------------------------------------------------------------
+
+##  ProductController
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.dac.producthive.exception.ResourceNotFoundException;
+import com.dac.producthive.model.Product;
+import com.dac.producthive.service.ProductService;
+
+@RestController
+@RequestMapping("/api")
+public class ProductController {
+   
+	
+	
+	
+	@Autowired
+	private ProductService productService;
+	
+	@PostMapping("/products")
+	public ResponseEntity<Product> saveProduct(@Validated @RequestBody Product  p) {
+				try {
+			
+		Product prod1=productService.saveProduct(p);
+		return ResponseEntity.status(HttpStatus.CREATED).body(prod1);
+		
+		} catch(Exception ex)
+		{
+			 ex.printStackTrace();
+			 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+					 
+		}
+	}
+	
+	@GetMapping("/products")
+	public ResponseEntity<List<Product>> displayAllProducts(){
+		try {
+			List<Product> products=productService.listAll();
+			return ResponseEntity.ok(products);
+		} catch(Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+	
+	
+	
+	
+	@GetMapping("/products/{pid}")
+	public ResponseEntity<Product> getProductById(@PathVariable(value="pid") Long pId) 
+			throws ResourceNotFoundException{
+
+		Product p=productService.getSingleProduct(pId).orElseThrow(() ->
+		new  ResourceNotFoundException("Product Not Found for this Id : "+pId)); 
+
+		return ResponseEntity.ok(p);
+	}
+	
+	
+		@PutMapping("/products/{pid}")
+	public ResponseEntity<Product> updateProduct(@PathVariable(value="pid") Long pId,
+			@Validated @RequestBody Product p) throws ResourceNotFoundException {
+
+		Product product=productService.getSingleProduct(pId).
+				orElseThrow(() -> new ResourceNotFoundException("Product Not Found for this Id :"+pId));
+	
+				product.setBrand(p.getBrand());
+		product.setMadein(p.getMadein());
+		product.setName(p.getName());
+		product.setPrice(p.getPrice());
+
+		final Product updatedProduct=productService.saveProduct(product); // invokes service layer method
+		return ResponseEntity.ok().body(updatedProduct);
+	}
+	
+	
+	
+			@DeleteMapping("/products/{pid}")
+			public ResponseEntity<Map<String,Boolean>> deleteProduct(@PathVariable(value="pid") Long pId) 
+					throws ResourceNotFoundException {
+
+				productService.getSingleProduct(pId).  
+				orElseThrow(() -> new ResourceNotFoundException("Product Not Found for this Id :"+pId));
+
+				productService.deleteProduct(pId); 
+
+				Map<String,Boolean> response=new HashMap<>();
+				response.put("Deleted", Boolean.TRUE);
+				
+				return ResponseEntity.ok(response);
+			}
+				
+						
+				@GetMapping("/search")
+			    public ResponseEntity<?> searchProductsByName(@RequestParam("name") String name) {
+			        try {
+			            List<Product> products = productService.searchProductsByName(name);
+			            
+			            if (products.isEmpty()) {
+			                return new ResponseEntity<>("No products found with the given name.", HttpStatus.NOT_FOUND);
+			            }
+			            
+			            return new ResponseEntity<>(products, HttpStatus.OK);
+			        } catch (Exception ex) {
+			        	
+			            return new ResponseEntity<>("An error occurred while searching for products.", HttpStatus.INTERNAL_SERVER_ERROR);
+			        }
+			    }
+			
+				
+			}
+			
+---------------------------------------------------------------------------------------------
+
+##  DealerController
+package com.dac.producthive.controller;
+
+
+
+import java.util.List;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.dac.producthive.exception.ResourceNotFoundException;
+import com.dac.producthive.model.Address;
+import com.dac.producthive.model.Dealer;
+import com.dac.producthive.model.DealerAndAddressProjection;
+import com.dac.producthive.service.DealerService;
+
+@RestController
+@RequestMapping("/api")
+public class DealerController {
+
+	
+	private final DealerService dservice;
+
+	public DealerController(DealerService dservice) {
+	
+		this.dservice = dservice;
+	}
+	
+	
+	
+			@PostMapping("/register")
+			public ResponseEntity<String> createDealer(@Validated @RequestBody Dealer dealer){
+				try {
+					Address address=dealer.getAddress(); 
+
+					
+					address.setDealer(dealer);
+					dealer.setAddress(address);
+
+					Dealer registeredDealer=dservice.registerDealer(dealer); //save dealer details
+					if(registeredDealer !=null) {
+						return ResponseEntity.ok("Registration Successfull");
+					}else {
+						return ResponseEntity.badRequest().body("Registration Failed");
+					}
+				}catch(Exception e) {
+					return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).
+							body("An Error Occurred :"+e.getMessage());
+				}
+				
+			}
+			
+			
+			
+		@PostMapping("/login")
+		public ResponseEntity<Boolean> loginDealer(@Validated @RequestBody Dealer dealer) 
+				throws ResourceNotFoundException
+		{
+			Boolean isLogin=false;
+			String email = dealer.getEmail();
+			String password =  dealer.getPassword();
+			
+			System.out.println(email);
+			
+			Dealer d= dservice.loginDealer(email).orElseThrow(() -> //Invokes loginDealer() method with email parameter
+			new ResourceNotFoundException("Dealer doen't Exists :: " +email));
+			
+			if(email.equals(d.getEmail()) && password.equals(d.getPassword())) {
+				isLogin=true;
+			}
+			return ResponseEntity.ok(isLogin);
+		}
+			
+		
+		@GetMapping("/dealers")
+		public ResponseEntity<List<DealerAndAddressProjection>> getDealerInfo(){
+			try {
+				List<DealerAndAddressProjection> selectedFields=dservice.getDealerInfo();
+				
+				return ResponseEntity.ok(selectedFields);
+			}catch(Exception e) {
+				e.printStackTrace();
+				
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+			}
+		}
+}
+
+---------------------------------------------------------------------------------------------
+
+## Dealer
+
+package com.dac.producthive.model;
+
+
+import java.nio.charset.StandardCharsets;
+import java.sql.Date;
+import java.util.Base64;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+/**
+ * Author : rajgs
+ * Date   : 1 Jan 2025
+ * Time   : 3:48:02 pm
+ * Model class for 1-1 Association Mapping with Address class for implementation of 
+ * PK-FK Relationship
+ */
+
+@Entity
+@Table(name="dealers")
+public class Dealer {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY,generator = "dealer_seq")
+	@SequenceGenerator(name="dealer_seq",initialValue = 101,allocationSize = 1)
+	@Column(name="did")
+	private Long id;
+
+	@Column(unique=true,nullable = false)    //Unique Constraint
+	private String email;
+
+	@Column(name="first_name",nullable = false) //not null constraint
+	private String fname;
+
+	@Column(name="last_name",nullable = false)
+	private String lname;
+
+	@NotBlank(message = "Password cannot be blank")
+	@Size(min = 8, max = 255, message = "Password must be between 8 and 255 characters")
+	@Column(name = "password", nullable = false)
+	private String password;
+
+	@JsonFormat(pattern="yyyy-MM-dd")
+	@Column(nullable = false)
+	private Date dob;
+
+	@Column(name="phone",unique = true,nullable = false)
+	private String phoneNo;
+
+	/*Primary Key - Foreign Key Relationship
+	 * Model 1-1 Bi-Directional Mapping b/n Dealer & Address
+	 * */
+	@OneToOne(mappedBy = "dealer", cascade = CascadeType.ALL)
+	private Address address; //has-a relationship
+
+	public Dealer() {
+		
+	}
+
+	public Dealer(Long id, String email, String fname, String lname,
+			@NotBlank(message = "Password cannot be blank") @Size(min = 8, max = 255, message = "Password must be between 8 and 255 characters") String password,
+			Date dob, String phoneNo) {
+		super();
+		this.id = id;
+		this.email = email;
+		this.fname = fname;
+		this.lname = lname;
+		this.password = password;
+		this.dob = dob;
+		this.phoneNo = phoneNo;
+	}
+
+	public Dealer(Long id, String email, String fname, String lname,
+			@NotBlank(message = "Password cannot be blank") @Size(min = 8, max = 255, message = "Password must be between 8 and 255 characters") String password,
+			Date dob, String phoneNo, Address address) {
+		super();
+		this.id = id;
+		this.email = email;
+		this.fname = fname;
+		this.lname = lname;
+		this.password = password;
+		this.dob = dob;
+		this.phoneNo = phoneNo;
+		this.address = address;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getFname() {
+		return fname;
+	}
+
+	public void setFname(String fname) {
+		this.fname = fname;
+	}
+
+	public String getLname() {
+		return lname;
+	}
+
+	public void setLname(String lname) {
+		this.lname = lname;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		Base64.Encoder encoder = Base64.getEncoder();  //Use Base64 class for password Encryption
+        String normalString = password;
+        String encodedString = encoder.encodeToString(   // encrypt password in database field
+        normalString.getBytes(StandardCharsets.UTF_8) );
+        this.password = encodedString;
+	}
+
+	public Date getDob() {
+		return dob;
+	}
+
+	public void setDob(Date dob) {
+		this.dob = dob;
+	}
+
+	public String getPhoneNo() {
+		return phoneNo;
+	}
+
+	public void setPhoneNo(String phoneNo) {
+		this.phoneNo = phoneNo;
+	}
+
+	public Address getAddress() {
+		return address;
+	}
+
+	public void setAddress(Address address) {
+		this.address = address;
+	}
+	
+	
+	
+	
+
+}
+
+
+--------------------------------------------------------------------------------------------
+
+## Address  
+
+
+package com.dac.producthive.model;
+
+import io.micrometer.common.lang.NonNull;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+
+@Entity
+public class Address {
+	
+	
+
+	@Id  
+	@GeneratedValue(strategy = GenerationType.IDENTITY) 
+    private Long addressId;
+	
+	private @NonNull String street;
+	private @NonNull String city;
+	private  int pincode;
+	
+	
+	@OneToOne             
+	@JoinColumn(name="dealer_id") //Foreign key field
+	private Dealer dealer; //Reference Class Object
+
+	
+	public Long getAddressId() {
+		return addressId;
+	}
+
+	public void setAddressId(Long addressId) {
+		this.addressId = addressId;
+	}
+
+	public String getStreet() {
+		return street;
+	}
+
+	public void setStreet(String street) {
+		this.street = street;
+	}
+
+	public String getCity() {
+		return city;
+	}
+
+	public void setCity(String city) {
+		this.city = city;
+	}
+
+	public int getPincode() {
+		return pincode;
+	}
+
+	
+
+	public void setPincode(int pincode) {
+		this.pincode = pincode;
+	}
+
+	public Dealer getDealer() {
+		return dealer;
+	}
+
+	public void setDealer(Dealer dealer) {
+		this.dealer = dealer;
+	}
+	
+	public Address(String street, String city, int pincode) {
+		this.street = street;
+		this.city = city;
+		this.pincode = pincode;
+	}
+
+	public Address() {
+	}
+
+	public Address(Long addressId, String street, String city, int pincode, Dealer dealer) {
+		this.addressId = addressId;
+		this.street = street;
+		this.city = city;
+		this.pincode = pincode;
+		this.dealer = dealer;
+	}
+}
+
+
+
+----------------------------------------------------------------------------------------
+
+
+## Product
+
+
+
+package com.dac.producthive.model;
+
+import jakarta.persistence.*;
+
+
+@Entity
+public class Product {
+	
+	
+		 @Id
+		 @GeneratedValue(strategy = GenerationType.IDENTITY,generator = "prod_seq")
+		 @SequenceGenerator(name="prod_seq",initialValue = 1000,allocationSize = 1)
+	   	 private Long pid;
+		 
+		 @Column(nullable = false)
+	     private String name;
+		 
+		 @Column(nullable = false)
+	     private String brand;
+		 
+		 @Column(nullable = false)
+	     private String madein;
+		 
+		 @Column(nullable = false)
+	     private float price;
+
+		public Long getPid() {
+			return pid;
+		}
+
+		public void setPid(Long pid) {
+			this.pid = pid;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		public void setName(String name) {
+			this.name = name;
+		}
+
+		public String getBrand() {
+			return brand;
+		}
+
+		public void setBrand(String brand) {
+			this.brand = brand;
+		}
+
+		public String getMadein() {
+			return madein;
+		}
+
+		public void setMadein(String madein) {
+			this.madein = madein;
+		}
+
+		public float getPrice() {
+			return price;
+		}
+
+		public void setPrice(float price) {
+			this.price = price;
+		}
+
+		public Product(Long pid, String name, String brand, String madein, float price) {
+			this.pid = pid;
+			this.name = name;
+			this.brand = brand;
+			this.madein = madein;
+			this.price = price;
+		}
+
+		public Product() {
+		}
+		 
+		 
+
+}
+
+
+----------------------------------------------------------------------------------------------
+
+###  DealerAndAddressProjection
+
+
+public class DealerAndAddressProjection {
+	
+	private Long id;
+	private String fname;
+	private String lname;
+	private String phoneNo;
+	private String email;
+	private String street;
+	private  String city;
+	private  int pincode;
+	
+	
+	public Long getId() {
+		return id;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
+	public String getFname() {
+		return fname;
+	}
+	public void setFname(String fname) {
+		this.fname = fname;
+	}
+	public String getLname() {
+		return lname;
+	}
+	public void setLname(String lname) {
+		this.lname = lname;
+	}
+	public String getPhoneNo() {
+		return phoneNo;
+	}
+	public void setPhoneNo(String phoneNo) {
+		this.phoneNo = phoneNo;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public String getStreet() {
+		return street;
+	}
+	public void setStreet(String street) {
+		this.street = street;
+	}
+	public String getCity() {
+		return city;
+	}
+	public void setCity(String city) {
+		this.city = city;
+	}
+	public int getPincode() {
+		return pincode;
+	}
+	public void setPincode(int pincode) {
+		this.pincode = pincode;
+	}
+	public DealerAndAddressProjection(Long id, String fname, String lname, String phoneNo, String email, String street,
+			String city, int pincode) {
+		this.id = id;
+		this.fname = fname;
+		this.lname = lname;
+		this.phoneNo = phoneNo;
+		this.email = email;
+		this.street = street;
+		this.city = city;
+		this.pincode = pincode;
+	}
+	public DealerAndAddressProjection() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+	
+	
+	
+}
+
+
+
+------------------------------------------------------------------------------------------
+
+##  DealerRepository
+
+
+package com.dac.producthive.repository;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import com.dac.producthive.model.Dealer;
+import com.dac.producthive.model.DealerAndAddressProjection;
+ 
+public interface DealerRepository  extends JpaRepository<Dealer, Long>{
+
+	
+	
+	public Optional<Dealer> findByEmail(String email);
+	
+	public Optional<Dealer> findByLname(String lname);
+	
+	
+	
+	@Query("SELECT new com.dac.producthive.model.DealerAndAddressProjection"
+			+ "(d.id,d.fname,d.lname,d.phoneNo,"
+			+ "d.email,a.street,a.city,a.pincode)"
+			+ " FROM Dealer d JOIN d.address a")
+	List<DealerAndAddressProjection> findSelectedFieldsFromDealerAndAddress(); 
+
+}
+
+
+--------------------------------------------------------------------------------------------
+
+
+##   ProductRepository
+
+package com.dac.producthive.repository;
+
+
+import java.util.List;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.dac.producthive.model.Product;
+
+
+
+public interface ProductRepository  extends JpaRepository<Product , Long>{
+
+	
+	
+	@Query("SELECT p FROM Product p WHERE LOWER(REPLACE(p.name, ' ', '')) LIKE "
+			+ "LOWER(CONCAT(REPLACE(:name, ' ', ''), '%'))") 
+	List<Product> findProductsByNameContainingIgnoreCase(@Param("name") String name);
+	
+}
+
+
+
+--------------------------------------------------------------------------------------------------
+
+## DealerService
+
+package com.dac.producthive.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.dac.producthive.model.Dealer;
+import com.dac.producthive.model.DealerAndAddressProjection;
+import com.dac.producthive.repository.DealerRepository;
+
+
+
+
+
+
+@Service
+public class DealerService {
+
+	
+	@Autowired
+	private DealerRepository drepo;
+
+	
+	public Dealer registerDealer(Dealer d) {
+		return drepo.save(d); 	}
+	
+	public Optional<Dealer> loginDealer(String email) {
+		return drepo.findByEmail(email); 	}
+	
+	public List<DealerAndAddressProjection> getDealerInfo() {
+		return drepo.findSelectedFieldsFromDealerAndAddress();
+ 	}
+	
+}
+
+
+-----------------------------------------------------------------------------------------------
+
+
+## ProductService
+
+package com.dac.producthive.service;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.dac.producthive.model.Product;
+import com.dac.producthive.repository.ProductRepository;
+
+@Service
+public class ProductService {
+
+	private final ProductRepository productRepository;
+
+	public ProductService(ProductRepository productRepository) {
+		
+		this.productRepository = productRepository;
+	} 
+	
+	
+	public Product saveProduct(Product p) {
+		return productRepository.save(p); 
+	}
+	
+	
+	public List<Product> listAll(){
+		return productRepository.findAll();
+		}
+	
+	
+	   public Optional<Product> getSingleProduct(long pid) {
+		   return productRepository.findById(pid);      
+	   }
+	   
+	   public void deleteProduct(long pid) {
+		   productRepository.deleteById(pid); 
+	   }
+	   
+	   public List<Product> searchProductsByName(String name){
+		   return productRepository.findProductsByNameContainingIgnoreCase(name); 
+	   }
+
+	   
+
+
+	   
+	   
+}
+
+
+------------------------------------------------------------------------------------------------
+
+
+### GlobalExceptionHandler
+
+
+ package com.dac.producthive.exception;
+
+ import org.springframework.http.HttpStatus;
+ import org.springframework.http.ResponseEntity;
+ import org.springframework.web.bind.annotation.ControllerAdvice;
+ import org.springframework.web.bind.annotation.ExceptionHandler;
+ import org.springframework.web.bind.annotation.ResponseStatus;
+
+ 
+ @ControllerAdvice
+ public class GlobalExceptionHandler {
+ 	
+ 	@ExceptionHandler(ResourceNotFoundException.class)
+     @ResponseStatus(HttpStatus.NOT_FOUND)
+     public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException ex) {
+         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+     }
+
+ }
+
+
+
+------------------------------------------------------------------------------------------------
+
+### ResourceNotFoundException
+
+
+
+package com.dac.producthive.exception;
+
+public class ResourceNotFoundException  extends Exception{
+
+	private static final long serialVersionUID = 1L;
+
+	//Generate constructor from Super claas
+	public ResourceNotFoundException(String message) {
+		super(message);
+		
+	}
+
+}
+
+ ===================================================================================================
+         ========================================================================
+                     ============================================
+                             ======================
+                                THE END    
+POSTMAN  API TESTING
+
+
+
+          
+     POST == http://localhost:8086/producthive/api/products
+       {
+        "name": "i phone",
+        "brand": "iphone 15",
+        "madein": "usa",
+        "price": 80000
+        }
+
+
+
+
+      GET  ==  http://localhost:8086/producthive/api/products/1012
+
+       PUT == http://localhost:8086/producthive/api/products/1004
+          {
+    "name":"mobile22",
+    "brand":"iphone 13",
+    "madein":" usa",
+    "price":13000
+         }
+
+
+
+
+      DELETE == http://localhost:8086/producthive/api/products/1011
+
+     POST === http://localhost:8086/producthive/api/register
+     {
+  "email": "example@example.com",
+  "fname": "John",
+  "lname": "Doe",
+  "password": "securepassword",
+  "dob": "1990-01-01",
+  "phoneNo": "1234567890",
+  "address": {
+    "street": "123 Main St",
+    "city": "New York",
+    "pincode": "10001"
+   }
+    }
+
+
+
+    POST == http://localhost:8086/producthive/api/login
+        {
+      "email": "example@example.com",
+      "password": "securepassword"
+     }
+
+
+
+    GET ==  http://localhost:8086/producthive/api/dealers
+
+
+    GET == http://localhost:8086/producthive/api/search?name=mo

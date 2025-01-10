@@ -1,0 +1,111 @@
+how to push project on GitHub
+
+0. open folder in which project and right click and open git bash
+
+1.  git config --global user.email "amandeepjatt50@gmail.com"
+
+2. git config --global user.name "Amandeep"
+
+3.cd projectname
+
+4. git status
+
+5.git init
+
+6. git status
+
+7. git add .
+
+8. git status
+
+9. now got github create repo and copy url
+
+10. git remote add origin paste url
+
+11. git commit -m "message "   //for save file
+
+12. git branch // bydefault branch is master
+
+13. git push origin master
+
+14. first time it will ask username and password
+
+
+
+
+---------------------------------------------------------------------------------------
+
+if we add any file or update something  then below command
+git init 
+git add .
+
+git status
+git commit -m "fefd"
+
+git push -u origin master // master is branch and u is upstring
+
+
+
+--------------------------------------------------------------------------------------
+
+git pull    // means like  refreshing browser to update project
+
+
+
+-----------------------------------------------------------
+
+how to create new branch 
+
+git checkout -b  branchname
+
+
+
+now check branch 
+git branch 
+
+
+now try to add  file through new branch
+
+git add .
+
+git status 
+
+git commit -m "test new branch"
+
+
+git push origin -u newbranchname
+
+-----------------------------------------------------
+
+git checkout is also used to change branch if not exit it create new branch 
+
+if we feel everything is right in new branch update then we can add that files to mainbranch 
+ 
+
+git merge newbranchame // which we created
+
+now push in central repo 
+
+git push -u origin master // means main branch
+
+
+
+----------------------------------------------------------------------------
+
+delte git branch
+
+first check git branch using git branch then
+
+git branch -d branchname
+
+now again check git branch 
+
+// every command we do using git it will update only in local rep to chnage the central repo we need to do below task 
+
+now git push -u origin master
+
+git puch -u origin --delete newbranchname 
+
+
+
+

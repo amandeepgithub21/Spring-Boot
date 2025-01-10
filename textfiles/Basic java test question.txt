@@ -1,0 +1,109 @@
+1. Palindrome Check
+java
+Copy code
+public class PalindromeCheck {
+    public static void main(String[] args) {
+        String str = "madam";
+        String reversed = new StringBuilder(str).reverse().toString();
+        if (str.equals(reversed)) {
+            System.out.println("Palindrome");
+        } else {
+            System.out.println("Not a Palindrome");
+        }
+    }
+}
+2. Prime Number in Range
+java
+
+public class PrimeInRange {
+    public static void main(String[] args) {
+        int start = 10, end = 30;
+        for (int i = start; i <= end; i++) {
+            if (isPrime(i)) {
+                System.out.print(i + " ");
+            }
+        }
+    }
+
+    public static boolean isPrime(int num) {
+        if (num <=  1) return false;
+        for (int i = 2; i <= Math.sqrt(num); i++) {
+            if (num % i == 0) return false;
+        }
+        return true;
+    }
+}
+3. Sum of Digits
+java
+Copy code
+public class SumOfDigits {
+    public static void main(String[] args) {
+        int num = 1234, sum = 0;
+        while (num > 0) {
+            sum += num % 10;
+            num /= 10;
+        }
+        System.out.println("Sum of digits: " + sum);
+    }
+}
+4. Sorting Strings
+java
+Copy code
+import java.util.Arrays;
+
+public class SortingStrings {
+    public static void main(String[] args) {
+        String[] strings = {"banana", "apple", "cherry"};
+        Arrays.sort(strings);
+        System.out.println("Sorted Strings: " + Arrays.toString(strings));
+    }
+}
+5. Fibonacci Series
+java
+Copy code
+public class FibonacciSeries {
+    public static void main(String[] args) {
+        int n = 10, a = 0, b = 1;
+        System.out.print("Fibonacci Series: ");
+        for (int i = 0; i < n; i++) {
+            System.out.print(a + " ");
+            int next = a + b;
+            a = b;
+            b = next;
+        }
+    }
+}
+6. Matrix Diagonal Sum
+java
+Copy code
+public class MatrixDiagonalSum {
+    public static void main(String[] args) {
+        int[][] matrix = {
+            {1, 2, 3},
+            {4, 5, 6},
+            {7, 8, 9}
+        };
+        int sum = 0;
+        for (int i = 0; i < matrix.length; i++) {
+            sum += matrix[i][i] + matrix[i][matrix.length - 1 - i];
+        }
+        if (matrix.length % 2 != 0) {
+            sum -= matrix[matrix.length / 2][matrix.length / 2]; // Remove duplicate center element
+        }
+        System.out.println("Diagonal Sum: " + sum);
+    }
+}
+7. Reverse Words in a String
+java
+Copy code
+public class ReverseWords {
+    public static void main(String[] args) {
+        String str = "Hello World";
+        String[] words = str.split(" ");
+        StringBuilder reversed = new StringBuilder();
+        for (int i = words.length - 1; i >= 0; i--) {
+            reversed.append(words[i]).append(" ");
+        }
+        System.out.println("Reversed: " + reversed.toString().trim());
+    }
+}
