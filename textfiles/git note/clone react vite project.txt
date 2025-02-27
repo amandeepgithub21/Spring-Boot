@@ -1,0 +1,22 @@
+react vite and java spring boot project
+
+
+1. Find the Repository URL
+GitHub pe jake link copy kro project ka
+
+2.  Open Terminal or Command Prompt  -- Navigate to Your Desired Directory using cd command cd path/to/your/folder  cd/petcareconnect/frontend
+
+3.use git clone command and paste link 
+ git clone https://github.com/user/repo.git
+
+4. now open project in vscode then open new terminal in vs code 
+
+npm install
+
+
+
+5. run project using command
+npm run dev
+
+
+

@@ -56,8 +56,11 @@ git pull    // means like  refreshing browser to update project
 
 how to create new branch 
 
-git checkout -b  branchname
+git checkout -b  branchname  or git branch branchname 
 
+// to change branch 
+
+git checkout branchname     or    git switch branchname
 
 
 now check branch 
@@ -92,7 +95,7 @@ git push -u origin master // means main branch
 
 ----------------------------------------------------------------------------
 
-delte git branch
+#delte git branch
 
 first check git branch using git branch then
 

@@ -15,3 +15,18 @@ npm run dev
 ----------------------------------------------------------------------------
 if vital error occur run below command
 npm install --save-dev web-vitals
+
+
+
+---------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
+Steps for create react app only 
+
+
+1. npx create-react-app produthive-consumer
+2. cd produthive-consumer 
+3. npm i react@18 react-dom@18
+4. npm i react-router-dom
+// for fetching api 
+5. npm install axios
+
